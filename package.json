@@ -1,0 +1,42 @@
+{
+  "name": "link-card",
+  "version": "1.0.0",
+  "main": "./built/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm run build && NODE_ENV=development node ./built",
+    "build": "swc src -d built -D --strip-leading-paths",
+    "ts-check": "tsc --noEmit",
+    "start": "node ./built"
+  },
+  "author": "typeling1578",
+  "license": "MPL-2.0",
+  "description": "",
+  "devDependencies": {
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.7.6",
+    "@types/node": "^22.1.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@fastify/compress": "^7.0.3",
+    "@fastify/multipart": "^8.3.0",
+    "@fastify/url-data": "^5.4.0",
+    "@fastify/websocket": "^10.0.1",
+    "app-root-path": "^3.1.0",
+    "fastify": "^4.28.1",
+    "fastify-graceful-shutdown": "^4.0.1",
+    "glob": "^11.0.0",
+    "https-proxy-agent": "^7.0.5",
+    "node-fetch": "^3.3.2",
+    "node-html-parser": "^6.1.13",
+    "open-graph-scraper": "^6.7.2",
+    "pino-pretty": "^11.2.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "redis": "^4.7.0",
+    "yaml": "^2.5.0"
+  }
+}

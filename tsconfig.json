@@ -1,0 +1,42 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "strict": true,
+        "strictNullChecks": true,
+        "skipLibCheck": true,
+        "rootDir": "./src",
+        "baseUrl": "./",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        },
+        "outDir": "./built",
+        "types": [
+            "node"
+        ],
+        "typeRoots": [
+            "./src/@types",
+            "./node_modules/@types",
+            "./node_modules"
+        ],
+        "lib": [
+            "esnext",
+            "dom"
+        ],
+        "jsx": "react-jsx"
+    },
+    "include": [
+        "./src/**/*.ts",
+        "./src/**/*.tsx"
+    ],
+    "exclude": [],
+    "references": [],
+    "ts-node": {
+        "experimentalSpecifierResolution": "node",
+        "transpileOnly": true,
+        "esm": true
+    }
+}

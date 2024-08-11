@@ -1,0 +1,107 @@
+<html>
+
+<head>
+    <title>Link Cards</title>
+    <CssImporter href="./page.css"></CssImporter>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <noscript>
+        <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
+    </noscript>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        body {
+            background-color: #f2f2f2;
+            color: #000;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #0d0d0d;
+                color: #fff;
+            }
+        }
+    </style>
+    <script>
+        function update_card() {
+            const format = document.querySelector("#select-format").value;
+            if (!format) {
+                return;
+            }
+            const url = document.querySelector("#input-url").value;
+            if (!url) {
+                return;
+            }
+            const card_url = `${location.origin}/cards?url=${encodeURIComponent(url)}`;
+            document.querySelector("#preview").src = card_url;
+            const embed_code_elem = document.querySelector("#embed-code");
+            switch (format) {
+                case "markdown-image":
+                    const markdown = `[![](${card_url + "&type=svg"})](${encodeURI(url)})`;
+                    embed_code_elem.value = markdown;
+                    break;
+                case "html-img":
+                    const html_img = `<a href="${encodeURI(url)}"><img src="${card_url + "&type=svg"}"></img></a>`;
+                    embed_code_elem.value = html_img;
+                    break;
+                case "html-embed":
+                    const html_embed = `<embed src="${card_url + "&type=html"}"></embed>`;
+                    embed_code_elem.value = html_embed;
+                    break;
+                default:
+                    break;
+            }
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            update_card();
+        });
+
+        function copy() {
+            const code = document.querySelector("#embed-code").value;
+            navigator.clipboard.writeText(code);
+            alert("copied!");
+        }
+    </script>
+</head>
+
+<body>
+    <div class="py-8 md:py-12 px-6 md:px-12 xl:px-20 flex flex-col gap-6 w-full max-w-screen-xl mx-auto">
+        <h1 class="text-3xl">Link Cards</h1>
+        <div class="flex flex-wrap gap-4">
+            <div>
+                <h3 class="text-2xl">Format</h3>
+                <select id="select-format" class="text-xl" oninput="update_card()">
+                    <option value="markdown-image">Markdown</option>
+                    <option value="html-img">HTML</option>
+                </select>
+            </div>
+            <div>
+                <h3 class="text-2xl">URL</h3>
+                <input id="input-url" class="text-xl" type="text" placeholder="Please type URL"
+                    oninput="update_card()"></input>
+            </div>
+        </div>
+        <div class="flex flex-col gap-4">
+            <h3 class="text-2xl">Code</h3>
+            <textarea id="embed-code" style="width: 500px; max-width: 100%; height: 100px"></textarea>
+            <div>
+                <button class="
+                    p-3 rounded-xl
+                    bg-[#1a73e8]
+                    text-white"
+                    onclick="copy()"
+                >
+                    Copy
+                </button>
+            </div>
+        </div>
+        <div class="flex flex-col gap-4">
+            <h3 class="text-2xl">Preview</h3>
+            <embed width="500" height="126" id="preview"></embed>
+        </div>
+    </div>
+</body>
+
+</html>
