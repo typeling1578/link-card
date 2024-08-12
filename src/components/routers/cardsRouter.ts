@@ -44,15 +44,8 @@ export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystr
                 url: req.query.url,
                 language: req.query.url ?? undefined,
             });
-            let card;
             switch (req.query.type) {
                 case "oembed":
-                    card = Cards({
-                        title: ogp_result.title,
-                        description: ogp_result.description,
-                        url: ogp_result.url,
-                        image_url: ogp_result.image_url,
-                    });
                     const oembed = {
                         version: "1.0",
                         type: "rich",
@@ -67,7 +60,7 @@ export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystr
                 case "html":
                 case "svg":
                 default:
-                    card = Cards({
+                    const card = Cards({
                         title: ogp_result.title,
                         description: ogp_result.description,
                         url: ogp_result.url,
