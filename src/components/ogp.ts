@@ -100,7 +100,8 @@ export default async function getOGPInfo({ url, language }: { url: string, langu
     let image_data_url = await cache.get({ key: image_data_url_cache_key });
     if (!image_data_url) {
         console.log("[INFO]","image_data_url cache miss");
-        const image_result = await fetch(image_url, {
+        const image_url_absolute = (new URL(image_url, url)).toString();
+        const image_result = await fetch(image_url_absolute, {
             headers: {
                 "User-Agent": config.user_agent,
                 "Accept-Language": language ?? "",
