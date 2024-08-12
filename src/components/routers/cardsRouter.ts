@@ -48,12 +48,14 @@ export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystr
                 case "oembed":
                     const oembed = {
                         version: "1.0",
+                        title: ogp_result.title,
+                        url: ogp_result.url,
+                        provider_name: "Link Card",
+                        provider_url: `https://${config.server_host}`,
                         type: "rich",
                         html: `<iframe style="width: 500px; height: 126px; border: 0" src="${`https://${config.server_host}/cards?type=html&url=${encodeURI(req.query.url)}`}"></iframe>`,
                         width: 500,
                         height: 126,
-                        title: ogp_result.title,
-                        url: ogp_result.url,
                     };
                     response = JSON.stringify(oembed);
                     break;
