@@ -25,6 +25,7 @@ export class URLInvalidError extends Error {
 
 export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystring: { [key: string]: string | undefined } }>, res: fastify.FastifyReply) {
     res.header("x-robots-tag", "noindex");
+    res.header("access-control-allow-origin", "*");
 
     try {
         if (!req.query.url) {
