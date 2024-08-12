@@ -6,22 +6,11 @@ import config from "@/config.js";
 import { Cards } from "../react/components/cards.js";
 import { Html2svg } from "../react/components/html2svg.js";
 import CacheService from "../cache.js";
-import getOGPInfo, { HTTPStatusCodeError } from "../ogp.js";
+import getOGPInfo from "../ogp.js";
 import { FetchError } from "node-fetch";
+import { HTTPStatusCodeError, URLInvalidError } from "../errors.js";
 
 const cache = new CacheService(["memory", "redis"]);
-
-export class URLInvalidError extends Error {
-    constructor(message: string, options?: ErrorOptions) {
-        super(message, options);
-
-        if (Error.captureStackTrace) {
-            Error.captureStackTrace(this, URLInvalidError);
-        }
-
-        this.name = "URLInvalidError";
-    }
-}
 
 export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystring: { [key: string]: string | undefined } }>, res: fastify.FastifyReply) {
     res.header("x-robots-tag", "noindex");
@@ -46,20 +35,6 @@ export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystr
                 language: req.query.url ?? undefined,
             });
             switch (req.query.type) {
-                case "oembed":
-                    const oembed = {
-                        version: "1.0",
-                        title: ogp_result.title,
-                        url: ogp_result.url,
-                        provider_name: "Link Card",
-                        provider_url: `https://${config.server_host}`,
-                        type: "rich",
-                        html: `<iframe style="width: 500px; height: 126px; border: 0" src="${`https://${config.server_host}/cards?type=html&url=${encodeURI(req.query.url)}`}"></iframe>`,
-                        width: 500,
-                        height: 126,
-                    };
-                    response = JSON.stringify(oembed);
-                    break;
                 case "html":
                 case "svg":
                 default:
@@ -86,9 +61,6 @@ export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystr
         }
 
         switch (req.query.type) {
-            case "oembed":
-                res.type("application/json");
-                break;
             case "html":
                 res.type("text/html");
                 break;

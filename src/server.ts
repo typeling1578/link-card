@@ -4,6 +4,7 @@ import Router from "./components/http-server/router.js";
 
 import cardsRouter from "./components/routers/cardsRouter.js";
 import topRouter from "./components/routers/top.js";
+import oembedRouter from "./components/routers/oembedRouter.js";
 
 const routers: Array<Router> = [
     new Router({
@@ -15,6 +16,11 @@ const routers: Array<Router> = [
         url: "/",
         method: "get",
         handler: topRouter,
+    }),
+    new Router({
+        url: "/oembed",
+        method: "get",
+        handler: oembedRouter,
     }),
 ];
 

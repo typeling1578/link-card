@@ -9,20 +9,9 @@ import { contentType } from "./http-server/content-type.js";
 import fetch from "node-fetch";
 import CacheService from "./cache.js";
 import { parse as htmlParser } from "node-html-parser";
+import { HTTPStatusCodeError } from "./errors.js";
 
 const cache = new CacheService(["memory", "redis"]);
-
-export class HTTPStatusCodeError extends Error {
-    constructor(message: string, options?: ErrorOptions) {
-        super(message, options);
-
-        if (Error.captureStackTrace) {
-            Error.captureStackTrace(this, HTTPStatusCodeError);
-        }
-
-        this.name = "HTTPStatusCodeError";
-    }
-}
 
 export default async function getOGPInfo({ url, language }: { url: string, language?: string }) {
     const page_text_cache_key = CacheService.cacheKeyGenerate(
