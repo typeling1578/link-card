@@ -1,4 +1,5 @@
 import React from "react";
+import config from "@/config.js";
 
 const maxWidth = 500;
 const maxHeight = 126;
@@ -8,7 +9,7 @@ export function Cards({ title, description, url, image_url }: { title: string, d
     return (
         <html>
             <head>
-                <link rel="alternate" type="application/json+oembed" href={`/cards?type=oembed&url=${encodeURI(url)}`} />
+                <link rel="alternate" type="application/json+oembed" href={`https://${config.server_host}/cards?type=oembed&url=${encodeURI(url)}`} title={title} />
                 <style>
                     {`
                     .main {
