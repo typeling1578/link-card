@@ -35,7 +35,7 @@ export default async function oembedRouter(req: fastify.FastifyRequest<{ Queryst
                 provider_name: "Link Card",
                 provider_url: `https://${config.server_host}`,
                 type: "rich",
-                html: `<iframe style="width: 500px; height: 126px; border: 0" src="${`https://${config.server_host}/cards?type=html&url=${encodeURIComponent(url)}`}"></iframe>`,
+                html: `<iframe width="500" height="126" style="border: 0" src="${`https://${config.server_host}/cards?type=html&url=${encodeURIComponent(url)}`}"></iframe>`,
                 width: 500,
                 height: 126,
             };
