@@ -84,7 +84,7 @@ export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystr
 
         switch (req.query.type) {
             case "oembed":
-                res.type("application/json+oembed");
+                res.type("application/json");
                 break;
             case "html":
                 res.type("text/html");
