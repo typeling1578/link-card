@@ -1,7 +1,6 @@
 import ogs from "open-graph-scraper";
 import { ImageObject } from "open-graph-scraper/types/lib/types";
 import config from "@/config.js";
-import { Cards } from "./react/components/cards.js";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import fs from "fs";
 import appRootPath from "app-root-path";
@@ -13,7 +12,19 @@ import { parse as htmlParser } from "node-html-parser";
 
 const cache = new CacheService(["memory", "redis"]);
 
-export default async function cardsGenerator(url: string, language?: string) {
+export class HTTPStatusCodeError extends Error {
+    constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
+
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, HTTPStatusCodeError);
+        }
+
+        this.name = "HTTPStatusCodeError";
+    }
+}
+
+export default async function getOGPInfo({ url, language }: { url: string, language?: string }) {
     const page_text_cache_key = CacheService.cacheKeyGenerate(
         "page_text",
         { url: url, ua: config.user_agent, lang: language ?? "" }
@@ -31,7 +42,7 @@ export default async function cardsGenerator(url: string, language?: string) {
             agent: config.proxy ? new HttpsProxyAgent(config.proxy) : undefined
         });
         if (page_result.status != 200) {
-            throw new Error(`${page_result.status} ${page_result.statusText}`);
+            throw new HTTPStatusCodeError(`${page_result.status} ${page_result.statusText}`);
         }
         page_text = await page_result.text();
         await cache.set({
@@ -126,12 +137,10 @@ export default async function cardsGenerator(url: string, language?: string) {
         });
     }
 
-    const card = Cards({
+    return {
         title: ogp.result.ogTitle ?? ogp.result.dcTitle ?? url,
         description: ogp.result.ogDescription ?? ogp.result.dcDescription ?? "",
         url: url,
         image_url: image_data_url,
-    });
-
-    return card;
+    };
 }

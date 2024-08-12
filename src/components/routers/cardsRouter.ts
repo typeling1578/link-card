@@ -5,53 +5,81 @@ import { ErrorResult } from "open-graph-scraper/types/lib/types";
 import config from "@/config.js";
 import { Cards } from "../react/components/cards.js";
 import { Html2svg } from "../react/components/html2svg.js";
-import cardsGenerator from "../cards-generator.js";
 import CacheService from "../cache.js";
+import getOGPInfo, { HTTPStatusCodeError } from "../ogp.js";
+import { FetchError } from "node-fetch";
+
 const cache = new CacheService(["memory", "redis"]);
+
+export class URLInvalidError extends Error {
+    constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
+
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, URLInvalidError);
+        }
+
+        this.name = "URLInvalidError";
+    }
+}
 
 export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystring: { [key: string]: string | undefined } }>, res: fastify.FastifyReply) {
     res.header("x-robots-tag", "noindex");
 
     try {
         if (!req.query.url) {
-            throw new Error("url must be specified");
+            throw new URLInvalidError("URL must be specified");
         }
-        new URL(req.query.url);
-    } catch (e) {
-        console.error(e);
-
-        const card = Cards({
-            title: "Invalid URL",
-            description: "",
-            url: "",
-            image_url: ""
-        });
-        let response;
-        if (req.query.type == "html") {
-            response = renderToString(card);
-            res.type("text/html");
-        } else {
-            const card_svg = Html2svg({ html: card });
-            response = renderToString(card_svg);
-            res.type("image/svg+xml");
+        if (!URL.canParse(req.query.url)) {
+            throw new URLInvalidError("Invalid URL")
         }
-        res.code(400);
-        return res.send(response);
-    }
 
-    try {
         const response_cache_key = CacheService.cacheKeyGenerate(
             "response",
             { url: req.query.url, type: req.query.type ?? "svg", ua: config.user_agent, lang: req.query.lang ?? "" }
         );
         let response = await cache.get({ key: response_cache_key });
         if (!response) {
-            const card = await cardsGenerator(req.query.url, req.query.lang);
-            if (req.query.type == "html") {
-                response = renderToString(card);
-            } else {
-                const card_svg = Html2svg({ html: card });
-                response = renderToString(card_svg);
+            const ogp_result = await getOGPInfo({
+                url: req.query.url,
+                language: req.query.url ?? undefined,
+            });
+            let card;
+            switch (req.query.type) {
+                case "oembed":
+                    card = Cards({
+                        title: ogp_result.title,
+                        description: ogp_result.description,
+                        url: ogp_result.url,
+                        image_url: ogp_result.image_url,
+                    });
+                    const oembed = {
+                        version: "1.0",
+                        type: "rich",
+                        html: `<iframe style="width: 500px; height: 126px; border: 0" src="${`https://${config.server_host}/cards?type=html&url=${encodeURI(req.query.url)}`}"></iframe>`,
+                        width: 500,
+                        height: 126,
+                        title: ogp_result.title,
+                        url: ogp_result.url,
+                    };
+                    response = JSON.stringify(oembed);
+                    break;
+                case "html":
+                case "svg":
+                default:
+                    card = Cards({
+                        title: ogp_result.title,
+                        description: ogp_result.description,
+                        url: ogp_result.url,
+                        image_url: ogp_result.image_url,
+                    });
+                    if (req.query.type == "html") {
+                        response = renderToString(card);
+                    } else {
+                        const card_svg = Html2svg({ html: card });
+                        response = renderToString(card_svg);
+                    }
+                    break;
             }
 
             await cache.set({
@@ -61,24 +89,59 @@ export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystr
             });
         }
 
-        if (req.query.type == "html") {
-            res.type("text/html");
-        } else {
-            res.type("image/svg+xml");
+        switch (req.query.type) {
+            case "oembed":
+                res.type("application/json+oembed");
+                break;
+            case "html":
+                res.type("text/html");
+                break;
+            case "svg":
+            default:
+                res.type("image/svg+xml");
+            break;
         }
+
         res.code(200);
         return res.send(response);
     } catch (e) {
         console.error(e);
 
-        const card = Cards({
-            title: (function(e): e is ErrorResult { return e instanceof Object && !(e instanceof Array) })(e) ?
-                    e?.result?.error ?? "Something went wrong!" :
-                    "Something went wrong!" ,
-            description: "file an issue at https://l.foss.beauty/link-card",
-            url: "",
-            image_url: ""
-        });
+        let card;
+        if (e instanceof HTTPStatusCodeError || e instanceof URLInvalidError) {
+            card = Cards({
+                title: e.message,
+                description: "",
+                url: "",
+                image_url: "",
+            });
+            res.code(400);
+        } else if (e instanceof FetchError && e.code == "ENOTFOUND") {
+            card = Cards({
+                title: "Not found",
+                description: "",
+                url: "",
+                image_url: "",
+            });
+            res.code(400);
+        } else if ((function(e): e is ErrorResult { return e instanceof Object && !(e instanceof Array) })(e)) {
+            card = Cards({
+                title: e?.result?.error ?? "Something went wrong!",
+                description: "file an issue at https://l.foss.beauty/link-card",
+                url: "",
+                image_url: ""
+            });
+            res.code(500);
+        } else {
+            card = Cards({
+                title: "Something went wrong!",
+                description: "file an issue at https://l.foss.beauty/link-card",
+                url: "",
+                image_url: ""
+            });
+            res.code(500);
+        }
+
         let response;
         if (req.query.type == "html") {
             response = renderToString(card);
@@ -88,7 +151,6 @@ export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystr
             response = renderToString(card_svg);
             res.type("image/svg+xml");
         }
-        res.code(500);
         return res.send(response);
     }
 }

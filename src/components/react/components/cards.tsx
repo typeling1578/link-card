@@ -8,6 +8,7 @@ export function Cards({ title, description, url, image_url }: { title: string, d
     return (
         <html>
             <head>
+                <link rel="alternate" type="application/json+oembed" href={`/cards?type=oembed&url=${encodeURI(url)}`} />
                 <style>
                     {`
                     .main {
