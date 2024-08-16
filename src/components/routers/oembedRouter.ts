@@ -2,9 +2,10 @@ import appRootPath from "app-root-path";
 import fastify from "fastify";
 import fs from "fs";
 import getOGPInfo from "../ogp.js";
-import { URLInvalidError } from "../errors.js";
+import { URLInvalidError, URLIsNotAllowed } from "../errors.js";
 import config from "@/config.js";
 import CacheService from "../cache.js";
+import { isMaliciousURL } from "../block-malicious-url.js";
 
 const oembed_cache = new CacheService(["memory", "redis"]);
 
@@ -20,6 +21,12 @@ export default async function oembedRouter(req: fastify.FastifyRequest<{ Queryst
         const url = (new URL(req.query.url).searchParams.get("url"));
         if (!url) {
             throw new URLInvalidError("Invalid URL");
+        }
+        if (!URL.canParse(url)) {
+            throw new URLInvalidError("Invalid URL")
+        }
+        if (await isMaliciousURL(url, { filteringAdult: true })) {
+            throw new URLIsNotAllowed(`"${url}" is not allowed`);
         }
 
         const response_cache_key = CacheService.cacheKeyGenerate(

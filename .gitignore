@@ -131,6 +131,7 @@ dist
 
 # Config
 .config/config.yaml
+.config/domains_blacklist
 
 # Built
 built

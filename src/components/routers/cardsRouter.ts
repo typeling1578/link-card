@@ -8,7 +8,8 @@ import { Html2svg } from "../react/components/html2svg.js";
 import CacheService from "../cache.js";
 import getOGPInfo from "../ogp.js";
 import { FetchError } from "node-fetch";
-import { HTTPStatusCodeError, URLInvalidError } from "../errors.js";
+import { HTTPStatusCodeError, URLInvalidError, URLIsNotAllowed } from "../errors.js";
+import { isMaliciousURL } from "../block-malicious-url.js";
 
 const cache = new CacheService(["memory", "redis"]);
 
@@ -22,6 +23,9 @@ export default async function cardsRouter(req: fastify.FastifyRequest<{ Querystr
         }
         if (!URL.canParse(req.query.url)) {
             throw new URLInvalidError("Invalid URL")
+        }
+        if (await isMaliciousURL(req.query.url, { filteringAdult: true })) {
+            throw new URLIsNotAllowed(`"${req.query.url}" is not allowed`);
         }
 
         const response_cache_key = CacheService.cacheKeyGenerate(

@@ -33,4 +33,5 @@ export default {
     },
     proxy: config?.proxy,
     user_agent: valueString(config?.user_agent, "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"),
+    domains_blacklist_path: valueString(config?.domains_blacklist_path, "./.config/domains_blacklist"),
 }
