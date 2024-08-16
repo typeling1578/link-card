@@ -10,7 +10,7 @@
     "start": "node ./built"
   },
   "author": "typeling1578",
-  "license": "AGPL3.0",
+  "license": "AGPL-3.0",
   "description": "",
   "devDependencies": {
     "@swc/cli": "^0.4.0",
