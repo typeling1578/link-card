@@ -1,7 +1,7 @@
 import ogs from "open-graph-scraper";
 import { ImageObject } from "open-graph-scraper/types/lib/types";
 import config from "@/config.js";
-import { HttpsProxyAgent } from "https-proxy-agent";
+import { ProxyAgent } from "undici";
 import fs from "fs";
 import appRootPath from "app-root-path";
 import path from "path";
@@ -28,7 +28,7 @@ export default async function getOGPInfo({ url, language }: { url: string, langu
             },
             size: 5242880, // 5MB
             signal: AbortSignal.timeout(10000),
-            agent: config.proxy ? new HttpsProxyAgent(config.proxy) : undefined
+            dispatcher: config.proxy ? new ProxyAgent(config.proxy) : undefined
         });
         if (page_result.status != 200) {
             throw new HTTPStatusCodeError(`${page_result.status} ${page_result.statusText}`);
