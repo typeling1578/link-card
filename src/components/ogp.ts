@@ -108,7 +108,7 @@ export default async function getOGPInfo({ url, language }: { url: string, langu
             },
             size: 3145728, // 3MB
             signal: AbortSignal.timeout(10000),
-            agent: config.proxy ? new ProxyAgent(config.proxy) : undefined
+            agent: config.proxy ? new HttpsProxyAgent(config.proxy) : undefined
         });
         let image_blob;
         if (image_result.status == 200) {
